@@ -113,6 +113,14 @@ const getActresses =
     }
   }
 
+//stampo nel log il resolve delle Promises :)
+console.log(
+  await getActress(2),
+  await getAllActresses(),
+  await getActresses([2, 3, 5])
+  //occhio agli id 1 e 4(NULL)
+)
+
 app.innerHTML = `
     <div>
       <h1> TEST </h1>

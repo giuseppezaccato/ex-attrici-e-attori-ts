@@ -16,18 +16,22 @@ function isActress(dati: unknown): dati is Actress {
     // dati && //fix ridondante! rimuovendo questa riga l'errore scompare!
     //?  => è tecnicamente inutile scrivere dati && in presenza della riga successiva
     //? semplicemente perchè con `typeof dati === 'object' && dati !== null` stiamo già escludendo gli unici falsy possibili
-    typeof dati === 'object' && dati !== null && //
+    typeof dati === 'object' && dati !== null &&
     "id" in dati && typeof dati.id === 'number' &&
     "name" in dati && typeof dati.name === 'string' &&
     "birth_year" in dati && typeof dati.birth_year === 'number' &&
-    "death_year" in dati && typeof dati.death_year === 'number' &&
+    // FIXED "death_year" in dati && typeof dati.death_year === 'number' && 
+    //todo controlla che esista e che sia un numero(rendendo però questa proprietà OBBLIGATORIA)
+    (!('death_year' in dati) || typeof dati.death_year === 'number') &&
+    //todo Ora controlla che 'death_year' NON esista OPPURE, se esiste, che sia un numero. 
+    //todo Questo la rende opzionale, ridando coerenza a ``(property) death_year?: number | undefined``
     "biography" in dati && typeof dati.biography === 'string' &&
     "image" in dati && typeof dati.image === 'string' &&
-    "most_famous_movies" in dati && //
+    "most_famous_movies" in dati &&
     Array.isArray(dati.most_famous_movies) && //sia un Array
     dati.most_famous_movies.length === 3 && //sia una Tuple con 3 elementi
     dati.most_famous_movies.every(m => typeof m === "string") && //...e OGNI(every) elemento sia una stringa
-    // volendo si potrebbe fare una funzione typeguard SOLO per dati.most_famous_movies
+    //fix volendo si potrebbe fare una funzione typeguard SOLO per dati.most_famous_movies
     "awards" in dati && typeof dati.awards === "string" &&
     "nationality" in dati && typeof dati.nationality === "string" &&
     arrayNationalities.includes(dati.nationality) //tra quelle ammesse
@@ -115,10 +119,11 @@ const getActresses =
 
 //stampo nel log il resolve delle Promises :)
 console.log(
-  await getActress(2),
+  await getActress(1),
   await getAllActresses(),
-  await getActresses([2, 3, 5])
-  //occhio agli id 1 e 4(NULL)
+  await getActresses([2, 25, 32])
+  //FIXED occhio agli id 1 e 4(NULL) FALSE(erano solo vive! -.-)
+  //FIXED questo problema era dovuto all'errore a riga 23!
 )
 
 app.innerHTML = `

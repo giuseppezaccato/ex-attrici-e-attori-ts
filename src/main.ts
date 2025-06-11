@@ -1,7 +1,6 @@
 import './style.css'
 import type { Actress } from './types/Person'
-
-
+const URL = import.meta.env.VITE_BASE_URL
 const app = document.getElementById('app')!
 
 // 📌 Milestone 3
@@ -35,9 +34,7 @@ function isActress(dati: unknown): dati is Actress {
   )
 }
 
-
-const URL = import.meta.env.VITE_BASE_URL
-
+//task funzione fetch
 const getActress = async (id: number): Promise<Actress | null> => {
   try {
     const response = await fetch(`${URL}/actresses/${id}`)
@@ -53,6 +50,68 @@ const getActress = async (id: number): Promise<Actress | null> => {
     return null
   }
 }
+
+// 📌 Milestone 4
+// Crea una funzione getAllActresses che chiama:
+// GET /actresses
+// La funzione deve restituire un array di oggetti Actress.
+// Può essere anche un array vuoto.
+
+//task funzione fetch
+const getAllActresses = async (): Promise<Actress[]> => {
+  //* l'array puo anche esser vuoto come da traccia(caso Error o catch)
+  try {
+    const response = await fetch(`${URL}/actresses`)
+    if (!response.ok) {
+      //* controllo response
+      throw new Error(`errore HTTP nella risposta: ${response.status}`)
+    }
+    const dati: unknown = await response.json()
+    if (!Array.isArray(dati)) {
+      //* controllo che dati sia un Array effettivamente!
+      throw new Error(`Attenzione! non è un Array!`)
+    }
+
+    //* una volta fatti i dovuti controlli salvo i dati in una variabile 
+    //* e nello stesso tempo con il filter mi assicuro che siano tutti "oggetto di type Actress"=>
+    const actressesInArray: Actress[] = dati.filter(A => isActress(A))
+
+    //*si poteva passare anche SOLO la funzione effettivamente perchè gia solo lei ritorna true o false(quindi fa da filtro)
+    //* e per lo stesso motivo quel true passa a TS ANCHE il type :Actress[](inference) che poteva quindi essere OMESSO
+    return actressesInArray
+  } catch (error) {
+    error instanceof Error
+      ? console.error(`attrici non trovate`, error)
+      : console.error(`errore sconosciuto`, error)
+    return [] //* Array vuoto
+  }
+}
+
+// 📌 Milestone 5
+// Crea una funzione getActresses che riceve un array di numeri (gli id delle attrici).
+// Per ogni id nell’array, usa la funzione getActress che hai creato nella Milestone 3 per recuperare l’attrice corrispondente.
+// L'obiettivo è ottenere una lista di risultati in parallelo, quindi dovrai usare Promise.all.
+// La funzione deve restituire un array contenente elementi di tipo Actress oppure null (se l’attrice non è stata trovata).
+
+const getActresses =
+  async (ids: number[]) //accetta un parametro ids, che è un array di numeri
+    : Promise<(Actress | null)[]> =>
+  //la funzione restituisce una Promise che, quando risolta, fornisce un array. 
+  // Ogni elemento dell’array può essere un oggetto di tipo Actress oppure(|) null 
+  // (ad esempio, se un ID non corrisponde a nessuna attrice).
+  {
+    try {
+      // const promises = ids.map(id => getActress(id)) //? questa variabile è qui SOLO per comodità
+      // const actresses = Promise.all(promises) //? idem per questa
+      // return actresses
+      return Promise.all(ids.map(id => getActress(id)))
+    } catch (error) {
+      error instanceof Error
+        ? console.error(`attrici non trovate`, error)
+        : console.error(`errore sconosciuto`, error)
+      return [] //* Array vuoto
+    }
+  }
 
 app.innerHTML = `
     <div>
